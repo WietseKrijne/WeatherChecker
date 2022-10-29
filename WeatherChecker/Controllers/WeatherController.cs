@@ -4,6 +4,7 @@ using System.Text;
 using WeatherChecker.Api.Dtos;
 using WeatherChecker.Core.Models;
 using WeatherChecker.Core.UseCases.GetCurrentWeather;
+using WeatherChecker.Core.UseCases.GetHistoricWeather;
 
 namespace WeatherChecker.Api.Controllers
 {
@@ -22,7 +23,7 @@ namespace WeatherChecker.Api.Controllers
                 return Conflict(result.Message);
             }
 
-            return Ok(result.Result);
+            return Ok(new WeatherDto(result.Result!));
         }
 
         [HttpGet("/IsTheWeatherGood")]
@@ -59,6 +60,20 @@ namespace WeatherChecker.Api.Controllers
                 return true;
             }
             return false;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<WeatherDto>> GetHistoricWeather([FromServices] IGetHistoricWeatherUseCase useCase, DateTime date)
+        {
+            var request = new GetHistoricWeatherRequest(date);
+            var result = await useCase.ExecuteAsync(request);
+
+            if (!result.Success)
+            {
+                return Conflict(result.Message);
+            }
+
+            return Ok(new WeatherDto(result.Result!));
         }
     }
 }
